@@ -125,8 +125,6 @@ function gameObject() {
 function homeTeamName() {
     return gameObject()["home"]["teamName"];
   }
-  
-console.log(homeTeamName());
 
 function numPointsScored(playerName) {
     return playerStats(playerName).points
@@ -138,153 +136,171 @@ function shoeSize(playerName) {
 
 function teamColors(teamName) {
     const gameDetails = gameObject()
+    const gameArr = Object.values(gameDetails)
 
-    for (let team in gameDetails) {
+    // combine dictionaries together for all players
+    const teamColors = gameArr.reduce((accumulator, gameArr) => {
+        const newEntry =  { [gameArr.teamName]: gameArr.colors };
+        return { ...accumulator, ...newEntry };
+        }, {});
 
-        if (gameDetails[team]["teamName"] === teamName) {
-            return gameDetails[team]["colors"]
-        }}
+    return teamColors[teamName]
 }
 
-function teamNames(gameDetails) {
+function teamNames() {
+    const gameDetails = gameObject()
     const gameValues = Object.values(gameDetails)
 
     return gameValues.map(team => team.teamName)
 }
 
 function playerNumbers(teamName) {
-    const gameDetails = gameObject()
+    const gameDetails = gameObject();
 
-    for (let team in gameDetails) {
+    function teamMatch(element, index, array) {
+        return element.teamName === teamName;
+    }
 
-        if (gameDetails[team]["teamName"] === teamName) {
-            const playerInfo = Object.values(gameDetails[team]["player"])
+    const gameArr = Object.values(gameDetails);
+    const teamArr = gameArr.find(teamMatch);
 
-            return playerInfo.map(player => player.number)
-        }}
+    const playerInfo = Object.values(teamArr.player)
+
+    return playerInfo.map(player => player.number)
+}
+
+function combinedPlayerObj() {
+    const gameDetails = gameObject();
+    const gameArr = Object.values(gameDetails);
+    const playerArr = gameArr.map(team => team.player)
+
+    // combine dictionaries together for all players
+    const combinedPlayers = playerArr.reduce((accumulator, playerArr) => {
+    return { ...accumulator, ...playerArr };
+    }, {});
+
+    return combinedPlayers
 }
 
 function playerStats(playerName) {
+    const combinedPlayers = combinedPlayerObj()
 
-    const gameDetails = gameObject();
-    for (let team in gameDetails) {
-
-        if (gameDetails[team]['player'][playerName]) {
-            return gameDetails[team]['player'][playerName]
-        }
-    }
+    return combinedPlayers[playerName]
 }
 
-function bigShoeRebounds(gameDetails) {
+function bigShoeRebounds() {
 
     let largestShoe = 0
     let largestShoePlayer
     let largestShoeRebounds
 
-    for (let team in gameDetails) {
-        for (let player in gameDetails[team]["player"]) {
-            const shoeSize = gameDetails[team]["player"][player]["shoe"]
-            if (shoeSize > largestShoe) {
-                largestShoe = shoeSize
-                largestShoePlayer = player
-                largestShoeRebounds = gameDetails[team]["player"][player]["rebounds"]
-            }
+    const combinedPlayers = combinedPlayerObj()
+
+    for (let player in combinedPlayers) {
+        const shoeSize = combinedPlayers[player]["shoe"]
+        if (shoeSize > largestShoe) {
+            largestShoe = shoeSize
+            largestShoePlayer = player
+            largestShoeRebounds = combinedPlayers[player]["rebounds"]
         }
-    }
+    }    
+
     console.log("player with the largest shoe:", largestShoePlayer)
     return largestShoeRebounds
 }
 
 // Bonus Questions
 
-function mostPointsScored(gameDetails) {
+function mostPointsScored() {
     let mostPoints = 0
     let mostPointsPlayer
 
-    for (let team in gameDetails) {
-        for (let player in gameDetails[team]["player"]) {
-            const points = gameDetails[team]["player"][player]["points"]
-            if (points > mostPoints) {
-                mostPoints = points
-                mostPointsPlayer = player
-            }
+    const combinedPlayers = combinedPlayerObj()
+
+    for (let player in combinedPlayers) {
+        const points = combinedPlayers[player]["points"]
+        if (points > mostPoints) {
+            mostPoints = points
+            mostPointsPlayer = player
         }
     }
+
     return mostPointsPlayer
 }
 
-function winningTeam(gameDetails) {
+function winningTeam() {
+    const gameDetails = gameObject()
     let mostPoints = 0
     let teamWon = 0
 
     for (let team in gameDetails) {
-        let teamPoints = 0
 
-        for (let player in gameDetails[team]["player"]) {
-            const points = gameDetails[team]["player"][player]["points"]
-            teamPoints += points
-        }
+        const playerArr = Object.values(gameDetails[team]["player"])
         
-        console.log(gameDetails[team]["teamName"], teamPoints, "points")
-        if (teamPoints>mostPoints) {
-            mostPoints = teamPoints
-            teamWon = gameDetails[team]["teamName"]
+        const teamPointsTotal = playerArr.reduce((init, element) => init + element.points, 0);
+        console.log(`Team ${gameDetails[team].teamName}: ${teamPointsTotal}`)
+
+        if (teamPointsTotal>mostPoints) {
+            mostPoints = teamPointsTotal
+            teamWon = gameDetails[team].teamName
         }
+        console.log(teamWon)
     }
     return teamWon
 }
 
-function playerWithLongestName(gameDetails) {
+function playerWithLongestName() {
     let longestName = ""
 
-    for (let team in gameDetails) {
+    const combinedPlayers = combinedPlayerObj()
 
-        for (let player in gameDetails[team]["player"]) {
-            if (player.length > longestName.length) {
-                longestName = player
-            }
+    for (let player in combinedPlayers) {
+        if (player.length > longestName.length) {
+            longestName = player
         }
-        
     }
+
     return longestName
 }
 
 // Super Bonus Question
 
-function doesLongNameStealATon(gameDetails) {
+function doesLongNameStealATon() {
     let longestName = ""
     let mostSteals = 0
     let mostStealsPlayer = ""
 
-    for (let team in gameDetails) {
+    const combinedPlayers = combinedPlayerObj()
 
-        for (let player in gameDetails[team]["player"]) {
-            if (player.length > longestName.length) {
-                longestName = player
-            }
+    for (let player in combinedPlayers) {
+        if (player.length > longestName.length) {
+            longestName = player
+        }
 
-            playerSteals = gameDetails[team]["player"][player]["steals"]
-            if (playerSteals>mostSteals) {
-                mostSteals = playerSteals
-                mostStealsPlayer = player
-            }
-        }   
-    }
+        playerSteals = combinedPlayers[player]["steals"]
+        if (playerSteals>mostSteals) {
+            mostSteals = playerSteals
+            mostStealsPlayer = player
+        }
+    }   
+
     return longestName === mostStealsPlayer
 }
 
-const gameDetails = gameObject();
+// const gameDetails = gameObject();
 
+// console.log(combinedPlayerObj())
+console.log("homeTeamName", homeTeamName());
 console.log("numPointsScored:", numPointsScored("Alan Anderson"))
 console.log("shoeSize:", shoeSize("Alan Anderson"))
 console.log("teamColors:", teamColors("Brooklyn Nets"))
-console.log("teamNames:", teamNames(gameDetails))
+console.log("teamNames:", teamNames())
 console.log("playerNumbers:", playerNumbers("Brooklyn Nets"))
 console.log("playerStats:", playerStats("Alan Anderson"))
-console.log("bigShoeRebounds:", bigShoeRebounds(gameDetails))
+console.log("bigShoeRebounds:", bigShoeRebounds())
 
-console.log("mostPointsScored:", mostPointsScored(gameDetails))
-console.log("winningTeam:", winningTeam(gameDetails))
-console.log("playerWithLongestName:", playerWithLongestName(gameDetails))
+console.log("mostPointsScored:", mostPointsScored())
+console.log("winningTeam:", winningTeam())
+console.log("playerWithLongestName:", playerWithLongestName())
 
-console.log("doesLongNameStealATon:", doesLongNameStealATon(gameDetails))
+console.log("doesLongNameStealATon:", doesLongNameStealATon())
